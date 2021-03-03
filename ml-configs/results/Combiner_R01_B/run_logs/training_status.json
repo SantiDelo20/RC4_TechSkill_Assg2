@@ -1,0 +1,50 @@
+{
+    "void_ratio": {
+        "lesson_num": 6
+    },
+    "Combiner": {
+        "checkpoints": [
+            {
+                "steps": 1699952,
+                "file_path": "results\\Combiner_R01_B\\Combiner\\Combiner-1699952.nn",
+                "reward": 1.0237000500783324,
+                "creation_time": 1614723995.1477273
+            },
+            {
+                "steps": 1799960,
+                "file_path": "results\\Combiner_R01_B\\Combiner\\Combiner-1799960.nn",
+                "reward": 1.0170000492362306,
+                "creation_time": 1614724282.0670154
+            },
+            {
+                "steps": 1899988,
+                "file_path": "results\\Combiner_R01_B\\Combiner\\Combiner-1899988.nn",
+                "reward": 1.023375028999908,
+                "creation_time": 1614724558.1475894
+            },
+            {
+                "steps": 1999975,
+                "file_path": "results\\Combiner_R01_B\\Combiner\\Combiner-1999975.nn",
+                "reward": 1.019654576748673,
+                "creation_time": 1614724860.8621902
+            },
+            {
+                "steps": 2000206,
+                "file_path": "results\\Combiner_R01_B\\Combiner\\Combiner-2000206.nn",
+                "reward": 1.0198500352768558,
+                "creation_time": 1614724861.629889
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 2000206,
+            "file_path": "results\\Combiner_R01_B\\Combiner.nn",
+            "reward": 1.0198500352768558,
+            "creation_time": 1614724861.629889
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.1.0",
+        "mlagents_version": "0.20.0",
+        "tensorflow_version": "2.4.1"
+    }
+}
