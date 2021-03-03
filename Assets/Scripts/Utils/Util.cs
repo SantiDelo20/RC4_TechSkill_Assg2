@@ -12,6 +12,13 @@ public enum BoundaryType { Inside = 0, Left = -1, Right = 1, Outside = 2 }
 
 static class Util
 {
+    /// <summary>
+    /// Extension method to Unities Vector3Int class. Now you can use a Vector3 variable and use the .ToVector3InRound to get the vector rounded to its integer values
+    /// </summary>
+    /// <param name="v">the Vector3 variable this method is applied to</param>
+    /// <returns>the rounded Vector3Int value of the given Vector3</returns>
+    public static Vector3Int ToVector3IntRound(this Vector3 v) => new Vector3Int(Mathf.RoundToInt(v.x), Mathf.RoundToInt(v.y), Mathf.RoundToInt(v.z));
+
     public static Vector3 Average(this IEnumerable<Vector3> vectors)
     {
         Vector3 sum = Vector3.zero;

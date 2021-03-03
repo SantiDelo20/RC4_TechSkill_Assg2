@@ -87,6 +87,7 @@ public class Face
     #region Private fields
 
     VoxelGrid _grid;
+    VoxelGridMeshBound _gridMesh;
 
     #endregion
 
@@ -103,6 +104,26 @@ public class Face
     public Face(int x, int y, int z, Axis direction, VoxelGrid grid)
     {
         _grid = grid;
+        Index = new Vector3Int(x, y, z);
+        Direction = direction;
+        Voxels = GetVoxels();
+
+        foreach (var v in Voxels.Where(v => v != null))
+            v.Faces.Add(this);
+
+        Center = GetCenter();
+    }
+    /// <summary>
+    /// face constructor for a voxel grid in a boundig mesh
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="z"></param>
+    /// <param name="direction"></param>
+    /// <param name="grid"></param>
+    public Face(int x, int y, int z, Axis direction, VoxelGridMeshBound grid)
+    {
+        _gridMesh = grid;
         Index = new Vector3Int(x, y, z);
         Direction = direction;
         Voxels = GetVoxels();

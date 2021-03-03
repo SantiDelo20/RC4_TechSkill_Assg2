@@ -37,6 +37,7 @@ public class Edge
     #region Private fields
 
     VoxelGrid _grid;
+    VoxelGridMeshBound _gridMesh;
 
     #endregion
 
@@ -53,6 +54,23 @@ public class Edge
     public Edge(int x, int y, int z, Axis direction, VoxelGrid grid)
     {
         _grid = grid;
+        Index = new Vector3Int(x, y, z);
+        Direction = direction;
+        Center = GetCenter();
+        Voxels = GetVoxels();
+        Faces = GetFaces();
+    }
+    /// <summary>
+    /// Edge constructor for a voxel grid in a bounding mesh.
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="z"></param>
+    /// <param name="direction"></param>
+    /// <param name="grid"></param>
+    public Edge(int x, int y, int z, Axis direction, VoxelGridMeshBound grid)
+    {
+        _gridMesh = grid;
         Index = new Vector3Int(x, y, z);
         Direction = direction;
         Center = GetCenter();

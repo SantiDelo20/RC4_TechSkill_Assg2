@@ -14,6 +14,8 @@ public class Corner
 
     protected VoxelGrid _grid;
 
+    private VoxelGridMeshBound _gridMesh;
+
     #endregion
 
     #region Constructor
@@ -29,6 +31,18 @@ public class Corner
         Index = index;
         Position = grid.Corner + new Vector3(index.x, index.y, index.z) * grid.VoxelSize;
     }
+    /// <summary>
+    /// Corner constructor for voxelgrid in a mesh bounding box
+    /// </summary>
+    /// <param name="index"></param>
+    /// <param name="grid"></param>
+    public Corner(Vector3Int index, VoxelGridMeshBound grid)
+    {
+        _gridMesh = grid;
+        Index = index;
+        Position = grid.Corner + new Vector3(index.x, index.y, index.z) * grid.VoxelSize;
+    }
+
 
     public Corner(Corner corner) : this(corner.Index, corner._grid)
     {

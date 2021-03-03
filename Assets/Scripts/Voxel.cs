@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
+public enum VoxelState { Dead = 0, Alive = 1, Available = 2 }
+
 public class Voxel : IEquatable<Voxel>
 {
     #region Public fields
@@ -17,15 +19,57 @@ public class Voxel : IEquatable<Voxel>
 
     #endregion
 
+    #region Private fields
+    private List<Corner> _corners;
+    private VoxelState _voxelStatus;
+    private bool _showVoxel;
+    #endregion
+
     #region Protected fields
 
-    //protected GameObject _voxelGO;
+    protected GameObject _voxelGO;
     protected VoxelGrid _voxelGrid;
+    protected VoxelGridMeshBound _voxelGridMesh;
     protected float _size;
 
     #endregion
 
     #region Contructors
+    public bool ShowVoxel
+    {
+        get
+        {
+            return _showVoxel;
+        }
+        set
+        {
+            _showVoxel = value;
+            if (!value)
+                _voxelGO.SetActive(value);
+            else
+                _voxelGO.SetActive(Status == VoxelState.Alive);
+        }
+    }
+    /// <summary>
+    /// Get the centre point of the voxel in worldspace
+    /// </summary>
+    public Vector3 Centre => _voxelGrid.Origin + (Vector3)Index * _voxelGrid.VoxelSize + Vector3.one * 0.5f * _voxelGrid.VoxelSize;
+
+    /// <summary>
+    /// Get and set the status of the voxel. When setting the status, the linked gameobject will be enable or disabled depending on the state.
+    /// </summary>
+    public VoxelState Status
+    {
+        get
+        {
+            return _voxelStatus;
+        }
+        set
+        {
+            _voxelGO?.SetActive(value == VoxelState.Alive && _showVoxel);
+            _voxelStatus = value;
+        }
+    }
 
     /// <summary>
     /// Creates a regular voxel on a voxel grid
@@ -38,6 +82,36 @@ public class Voxel : IEquatable<Voxel>
         Index = index;
         _voxelGrid = voxelGrid;
         _size = _voxelGrid.VoxelSize;
+    }
+
+    public Voxel(Vector3Int index, GameObject goVoxel, VoxelGridMeshBound grid)
+    {
+        _voxelGridMesh = grid;
+        Index = index;
+        _voxelGO = GameObject.Instantiate(goVoxel, Centre, Quaternion.identity);
+        _voxelGO.GetComponent<VoxelTrigger>().TriggerVoxel = this;
+        _voxelGO.transform.localScale = Vector3.one * _voxelGrid.VoxelSize * 0.95f;
+        Status = VoxelState.Available;
+    }
+
+    public List<Corner> Corners
+    {
+        get
+        {
+            if (_corners == null)
+            {
+                _corners = new List<Corner>();
+                _corners.Add(_voxelGrid.Corners[Index.x, Index.y, Index.z]);
+                _corners.Add(_voxelGrid.Corners[Index.x + 1, Index.y, Index.z]);
+                _corners.Add(_voxelGrid.Corners[Index.x, Index.y + 1, Index.z]);
+                _corners.Add(_voxelGrid.Corners[Index.x, Index.y, Index.z + 1]);
+                _corners.Add(_voxelGrid.Corners[Index.x + 1, Index.y + 1, Index.z]);
+                _corners.Add(_voxelGrid.Corners[Index.x, Index.y + 1, Index.z + 1]);
+                _corners.Add(_voxelGrid.Corners[Index.x + 1, Index.y, Index.z + 1]);
+                _corners.Add(_voxelGrid.Corners[Index.x + 1, Index.y + 1, Index.z + 1]);
+            }
+            return _corners;
+        }
     }
 
     /// <summary>
