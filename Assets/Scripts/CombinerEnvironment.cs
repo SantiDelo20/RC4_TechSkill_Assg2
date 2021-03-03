@@ -4,6 +4,11 @@ using System.Linq;
 using UnityEngine;
 using Unity.MLAgents;
 using UnityEngine.UI;
+//For DenseGrid void generators
+using DenseGrid;
+//QuickGraph
+using QuickGraph;
+using QuickGraph.Algorithms;
 
 public class CombinerEnvironment : MonoBehaviour
 {
@@ -28,6 +33,14 @@ public class CombinerEnvironment : MonoBehaviour
 
     #endregion
 
+    #region VoidGrid
+
+    Grid3d _grid = null;
+    string _voxelSize = "0.8";
+    GameObject _voids;
+    List<(DenseGrid.Voxel, float)> _orderedVoxels = new List<(DenseGrid.Voxel, float)>();
+
+    #endregion
     #region Unity Standard Methods
 
     void Start()
@@ -211,6 +224,43 @@ public class CombinerEnvironment : MonoBehaviour
         // 56 Calculate the amount of voids
         float voidCount = VoxelGrid.GetVoxels().Count(v => !v.IsOccupied);
         return voidCount / (_gridSize.x * _gridSize.y * _gridSize.z);
+    }
+
+    /// <summary>
+    /// Trying to make more complex aggregations. Method From https://github.com/ADRC4/Voxel
+    /// </summary>
+    void MakeGrid()
+    {
+        var colliders = _voids
+                      .GetComponentsInChildren<MeshCollider>()
+                      .ToArray();
+
+        var voxelSize = float.Parse(_voxelSize);
+        _grid = Grid3d.MakeGridWithVoids(colliders, voxelSize);
+        
+        var faces = _grid.GetFaces().Where(f => f.IsActive);
+        var graphEdges = faces.Select(f => new TaggedEdge<DenseGrid.Voxel, DenseGrid.Face>(f.Voxels[0], f.Voxels[1], f));
+
+        var graph = graphEdges.ToUndirectedGraph<DenseGrid.Voxel, TaggedEdge<DenseGrid.Voxel, DenseGrid.Face>>();
+
+        var bottomSlab = _grid
+                            .GetVoxels()
+                            .Where(v => v.IsActive && v.Index.y == 0)
+                            .ToList();
+
+        var bottomCentroid = _grid.BBox.center;
+        bottomCentroid.y = 0;
+
+        var startVoxel = bottomSlab.MinBy(v => (v.Center - bottomCentroid).sqrMagnitude);
+        var shortest = graph.ShortestPathsDijkstra(e => 1.0, startVoxel);
+
+        _orderedVoxels = _grid
+                          .GetVoxels()
+                          .Where(v => v.IsActive)
+                          .Select(v => (v, shortest(v, out var path) ? path.Count() + Random.value * 0.9f : float.MaxValue))
+                          .OrderBy(p => p.Item2)
+                          .Select(p => (p.v, p.Item2 / 30f))
+                          .ToList();
     }
 
     #endregion
