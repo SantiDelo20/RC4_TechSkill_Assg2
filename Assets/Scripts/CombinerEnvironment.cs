@@ -53,7 +53,7 @@ public class CombinerEnvironment : MonoBehaviour
     void Start()
     {
         // 02 Create the base VoxelGrid
-        _gridSize = new Vector3Int(5, 5, 5);
+        _gridSize = new Vector3Int(5, 5, 10);
         VoxelGrid = new VoxelGrid(_gridSize, transform.position, 1f);
         
         // 03 Create the array that will store the environment's components
@@ -119,7 +119,7 @@ public class CombinerEnvironment : MonoBehaviour
         else
         {
             _errasing.text = $"Errasing Components";
-            ErraseRaycast();
+            EraseRaycast();
         }
 
         // 18 Use mouse click to select a component
@@ -305,7 +305,7 @@ public class CombinerEnvironment : MonoBehaviour
 
     #region public methods
 
-    public void ErraseRaycast()
+    public void EraseRaycast()
     {
         //_errase = true;
 
@@ -333,15 +333,15 @@ public class CombinerEnvironment : MonoBehaviour
     }
 
     //Errase buttons
-    public void StartErraseRayCast()
+    public void StartEraseRayCast()
     {
         _errase = true;
-        Debug.Log("Errase set to true");
+        Debug.Log("Erase set to true");
     }
-    public void StopErraseRayCast()
+    public void StopEraseRayCast()
     {
         _errase = false;
-        Debug.Log("Errase set to false");
+        Debug.Log("Erase set to false");
     }
     #endregion
 }
