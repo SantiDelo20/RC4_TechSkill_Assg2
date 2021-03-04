@@ -17,6 +17,8 @@ public class Voxel : IEquatable<Voxel>
     public bool IsOccupied;
     public bool IsOrigin;
 
+    public VoxelState voxelStatus;
+
     #endregion
 
     #region Private fields

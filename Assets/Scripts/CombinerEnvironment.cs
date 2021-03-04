@@ -18,6 +18,8 @@ public class CombinerEnvironment : MonoBehaviour
     public VoxelGrid VoxelGrid { get; private set; }
     Vector3Int _gridSize;
 
+    private bool _errase = false;
+
     // 01.2 The Agent that operates on this evironment
     CombinerAgent _agent;
 
@@ -31,6 +33,10 @@ public class CombinerEnvironment : MonoBehaviour
     [SerializeField]
     Text _voidRatio;
 
+    [SerializeField]
+    Text _errasing;
+
+
     #endregion
 
     #region VoidGrid
@@ -41,6 +47,7 @@ public class CombinerEnvironment : MonoBehaviour
     List<(DenseGrid.Voxel, float)> _orderedVoxels = new List<(DenseGrid.Voxel, float)>();
 
     #endregion
+
     #region Unity Standard Methods
 
     void Start()
@@ -90,8 +97,33 @@ public class CombinerEnvironment : MonoBehaviour
     {
         // 17 Draw the voxels using Drawing
         DrawVoxels();
-        
+
+        if (_errase != true)
+        {
+            _errasing.text = $"Selecting Components";
+            if (Input.GetMouseButtonDown(0))
+            {
+                // 21 Select component by clicking
+                SelectComponent();
+                if (_selected != null)
+                {
+                    print("Component Selected");
+                }
+                else
+                {
+                    print("No component selected");
+                }
+            }
+
+        }
+        else
+        {
+            _errasing.text = $"Errasing Components";
+            ErraseRaycast();
+        }
+
         // 18 Use mouse click to select a component
+        /*
         if (Input.GetMouseButtonDown(0))
         {
             // 21 Select component by clicking
@@ -105,6 +137,7 @@ public class CombinerEnvironment : MonoBehaviour
                 print("No component selected");
             }
         }
+        */
 
         // 22 Use 1 to change the state of the component
         //if (Input.GetKeyDown(KeyCode.Alpha1))
@@ -123,6 +156,7 @@ public class CombinerEnvironment : MonoBehaviour
         //        _selected.ChangeState(0);
         //    }
         //}
+        //-----------------xx
 
         // 76 Show the Void Ratio if text has been assigned
         if (_voidRatio != null)
@@ -140,7 +174,6 @@ public class CombinerEnvironment : MonoBehaviour
     #endregion
 
     #region Private Methods
-
     //14 Create the DrawVoxels method
     /// <summary>
     /// Uses <see cref="Drawing"/> to draw voxels without gameobjects
@@ -262,6 +295,53 @@ public class CombinerEnvironment : MonoBehaviour
                           .Select(p => (p.v, p.Item2 / 30f))
                           .ToList();
     }
+    /// <summary>
+    /// Method to manualy errase voxels before the agent tries to aggregate patterns
+    /// </summary>
+    /// <param name="screenPosition"></param>
 
+
+    #endregion
+
+    #region public methods
+
+    public void ErraseRaycast()
+    {
+        //_errase = true;
+
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+        if (Physics.Raycast(ray, out RaycastHit hit))
+        {
+            Transform objectHit = hit.transform;
+
+            if (objectHit.CompareTag("Component"))
+            {
+                objectHit.GetComponent<Component>().voxel.voxelStatus = VoxelState.Dead;
+
+                //var selected = objectHit.GetComponent<Component>();
+                //selected.voxel.voxelStatus = VoxelState.Dead;
+            }
+        }
+        /*
+        while (_errase == true)
+        {
+            
+        }
+        */
+
+    }
+
+    //Errase buttons
+    public void StartErraseRayCast()
+    {
+        _errase = true;
+        Debug.Log("Errase set to true");
+    }
+    public void StopErraseRayCast()
+    {
+        _errase = false;
+        Debug.Log("Errase set to false");
+    }
     #endregion
 }

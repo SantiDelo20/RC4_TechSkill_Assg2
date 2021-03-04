@@ -5,8 +5,8 @@ using UnityEngine;
 public class Component : MonoBehaviour
 {
     // The voxel this component is assigned to
-    Voxel _voxel;
-
+    private Voxel _voxel;
+    public Voxel voxel;
     // The state of the component
     public int State { get; private set; }
 
