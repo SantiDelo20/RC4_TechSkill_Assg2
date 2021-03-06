@@ -18,7 +18,42 @@ public class VoxelGrid
 
     #endregion
 
+    #region Public fields
+
+    private bool _showVoidVoxels = false;
+
+    #endregion
+
     #region Constructors
+
+    public bool ShowPatternVoxels
+    {
+        get
+        {
+            return _showVoidVoxels;
+        }
+        set
+        {
+            foreach (var voxel in FlattenedVoxels)
+            {
+                voxel.ShowVoidVoxel = value;
+            }
+            _showVoidVoxels = value;
+        }
+    }
+    /// <summary>
+    /// Return the voxels in a flat list rather than a threedimensional array
+    /// </summary>
+    public IEnumerable<Voxel> FlattenedVoxels
+    {
+        get
+        {
+            for (int x = 0; x < GridSize.x; x++)
+                for (int y = 0; y < GridSize.y; y++)
+                    for (int z = 0; z < GridSize.z; z++)
+                        yield return Voxels[x, y, z];
+        }
+    }
 
     /// <summary>
     /// Constructor for a basic <see cref="VoxelGrid"/>

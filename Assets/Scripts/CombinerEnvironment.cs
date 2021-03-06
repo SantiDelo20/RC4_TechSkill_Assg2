@@ -9,6 +9,7 @@ using DenseGrid;
 //QuickGraph
 using QuickGraph;
 using QuickGraph.Algorithms;
+using System;
 
 public class CombinerEnvironment : MonoBehaviour
 {
@@ -19,6 +20,7 @@ public class CombinerEnvironment : MonoBehaviour
     Vector3Int _gridSize;
 
     private bool _errase = false;
+    private bool _drawVoids = false;
 
     // 01.2 The Agent that operates on this evironment
     CombinerAgent _agent;
@@ -28,6 +30,8 @@ public class CombinerEnvironment : MonoBehaviour
 
     // 01.4 The selected component
     Component _selected;
+    
+
 
     // 01.05 The Text object to display the current Void Ratio
     [SerializeField]
@@ -53,7 +57,7 @@ public class CombinerEnvironment : MonoBehaviour
     void Start()
     {
         // 02 Create the base VoxelGrid
-        _gridSize = new Vector3Int(5, 5, 10);
+        _gridSize = new Vector3Int(5, 10, 5);
         VoxelGrid = new VoxelGrid(_gridSize, transform.position, 1f);
         
         // 03 Create the array that will store the environment's components
@@ -82,7 +86,6 @@ public class CombinerEnvironment : MonoBehaviour
                     var newComponent = newComponentGO.GetComponent<Component>();
                     // 11 Store the component at the components array
                     _components[x, y, z] = newComponent;
-
                     // 12 Assign the Voxel to the Component
                     newComponent.SetVoxel(voxel);
                     // 13 Set the state of the Component as 0 (empty state)
@@ -101,6 +104,7 @@ public class CombinerEnvironment : MonoBehaviour
         if (_errase != true)
         {
             _errasing.text = $"Selecting Components";
+
             if (Input.GetMouseButtonDown(0))
             {
                 // 21 Select component by clicking
@@ -114,30 +118,24 @@ public class CombinerEnvironment : MonoBehaviour
                     print("No component selected");
                 }
             }
-
         }
         else
         {
-            _errasing.text = $"Errasing Components";
-            EraseRaycast();
-        }
+            _errasing.text = $"Erasing Components";
 
-        // 18 Use mouse click to select a component
-        /*
-        if (Input.GetMouseButtonDown(0))
-        {
-            // 21 Select component by clicking
-            SelectComponent();
-            if (_selected != null)
+            if (Input.GetMouseButtonDown(0))
             {
-                print("Component Selected");
-            }
-            else
-            {
-                print("No component selected");
+                EraseRaycast();
+                if (_selected != null)
+                {
+                    print("Component Cleared");
+                }
+                else
+                {
+                    print("No component selected");
+                }
             }
         }
-        */
 
         // 22 Use 1 to change the state of the component
         //if (Input.GetKeyDown(KeyCode.Alpha1))
@@ -156,7 +154,6 @@ public class CombinerEnvironment : MonoBehaviour
         //        _selected.ChangeState(0);
         //    }
         //}
-        //-----------------xx
 
         // 76 Show the Void Ratio if text has been assigned
         if (_voidRatio != null)
@@ -187,6 +184,40 @@ public class CombinerEnvironment : MonoBehaviour
             if (!voxel.IsOccupied)
             {
                 Drawing.DrawTransparentCube(((Vector3)voxel.Index * VoxelGrid.VoxelSize) + transform.position, VoxelGrid.VoxelSize);
+            }
+            // Draw Void voxel if requested
+            else
+            {
+                if (_drawVoids == true)
+                {
+                    Drawing.DrawTransparentCubeVoids(((Vector3)voxel.Index * VoxelGrid.VoxelSize) + transform.position, VoxelGrid.VoxelSize);
+                }
+            }
+
+        }
+    }
+
+    /// <summary>
+    /// Added method, manual erase
+    /// </summary>
+    private void EraseRaycast()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+        if (Physics.Raycast(ray, out RaycastHit hit))
+        {
+            Transform objectHit = hit.transform;
+
+            if (objectHit.CompareTag("Component"))
+            {
+                _selected = objectHit.gameObject.GetComponent<Component>();
+                _selected.GetComponent<BoxCollider>().enabled = false;
+                _selected.ClearComponent();
+                _selected.Voxel.IsVoid = true;
+
+                string infoB = _selected.ToString();//prints comonent name with coordinates
+                print(infoB);
+                
             }
         }
     }
@@ -290,7 +321,7 @@ public class CombinerEnvironment : MonoBehaviour
         _orderedVoxels = _grid
                           .GetVoxels()
                           .Where(v => v.IsActive)
-                          .Select(v => (v, shortest(v, out var path) ? path.Count() + Random.value * 0.9f : float.MaxValue))
+                          .Select(v => (v, shortest(v, out var path) ? path.Count() + UnityEngine.Random.value * 0.9f : float.MaxValue))
                           .OrderBy(p => p.Item2)
                           .Select(p => (p.v, p.Item2 / 30f))
                           .ToList();
@@ -305,33 +336,6 @@ public class CombinerEnvironment : MonoBehaviour
 
     #region public methods
 
-    public void EraseRaycast()
-    {
-        //_errase = true;
-
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-        if (Physics.Raycast(ray, out RaycastHit hit))
-        {
-            Transform objectHit = hit.transform;
-
-            if (objectHit.CompareTag("Component"))
-            {
-                objectHit.GetComponent<Component>().voxel.voxelStatus = VoxelState.Dead;
-
-                //var selected = objectHit.GetComponent<Component>();
-                //selected.voxel.voxelStatus = VoxelState.Dead;
-            }
-        }
-        /*
-        while (_errase == true)
-        {
-            
-        }
-        */
-
-    }
-
     //Errase buttons
     public void StartEraseRayCast()
     {
@@ -342,6 +346,21 @@ public class CombinerEnvironment : MonoBehaviour
     {
         _errase = false;
         Debug.Log("Erase set to false");
+    }
+    public void ShowVoidVoxels()
+    {
+        _drawVoids = true;
+        Debug.Log("DrawingVoids");
+    }
+    public void HideVoidVoxels()
+    {
+        _drawVoids = false;
+        Debug.Log("HideVoids");
+    }
+
+    public void ReleaseAgent()
+    {
+        _agent.UnfreezeAgent();
     }
     #endregion
 }

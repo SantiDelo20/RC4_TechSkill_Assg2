@@ -1,18 +1,19 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
+
 
 public class Component : MonoBehaviour
 {
     // The voxel this component is assigned to
-    private Voxel _voxel;
-    public Voxel voxel;
+    public Voxel Voxel { get; private set; }
+    
     // The state of the component
     public int State { get; private set; }
 
     // The component's sections
     private GameObject[] _sections;
-
     #region Unity Standard Methods
 
     private void Awake()
@@ -44,10 +45,10 @@ public class Component : MonoBehaviour
     private bool ActivateSections(int state, int a, int b = 0)
     {
         // Return if trying to change a voxel that is occupied but not the origin of the component
-        if (_voxel.IsOccupied && !_voxel.IsOrigin) return false;
+        if (Voxel.IsOccupied && !Voxel.IsOrigin) return false;
 
         // Get the neighbour voxels
-        var faceNeighbours = _voxel.GetFaceNeighboursArray();
+        var faceNeighbours = Voxel.GetFaceNeighboursArray();
         // If the new state is not zero
         if (state != 0)
         {
@@ -65,8 +66,8 @@ public class Component : MonoBehaviour
             }
 
             // Set the origin voxel and tag as occupied
-            _voxel.IsOccupied = true;
-            _voxel.IsOrigin = true;
+            Voxel.IsOccupied = true;
+            Voxel.IsOrigin = true;
 
             for (int i = 0; i < _sections.Length; i++)
             {
@@ -88,8 +89,8 @@ public class Component : MonoBehaviour
         else
         {
             // If target state is 0, deactivate the occupied voxels
-            _voxel.IsOccupied = false;
-            _voxel.IsOrigin = false;
+            Voxel.IsOccupied = false;
+            Voxel.IsOrigin = false;
             for (int i = 0; i < _sections.Length; i++)
             {
                 if (_sections[i].activeSelf)
@@ -115,7 +116,16 @@ public class Component : MonoBehaviour
     /// <param name="voxel"></param>
     public void SetVoxel(Voxel voxel)
     {
-        _voxel = voxel;
+        Voxel = voxel;
+    }
+
+    public void ClearComponent()
+    {
+        Voxel.IsOccupied = true;
+        Voxel.voxelStatus = VoxelState.Dead;
+
+        string voxelInfo = Voxel.IsOccupied.ToString();
+        print(voxelInfo);
     }
 
     /// <summary>

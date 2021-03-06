@@ -15,9 +15,11 @@ public class Voxel : IEquatable<Voxel>
     public bool IsActive;
 
     public bool IsOccupied;
+    public bool IsVoid;
     public bool IsOrigin;
 
     public VoxelState voxelStatus;
+    public GameObject _voxelGO;
 
     #endregion
 
@@ -29,7 +31,7 @@ public class Voxel : IEquatable<Voxel>
 
     #region Protected fields
 
-    protected GameObject _voxelGO;
+    
     protected VoxelGrid _voxelGrid;
     protected VoxelGridMeshBound _voxelGridMesh;
     protected float _size;
@@ -37,7 +39,8 @@ public class Voxel : IEquatable<Voxel>
     #endregion
 
     #region Contructors
-    public bool ShowVoxel
+    
+    public bool ShowVoidVoxel
     {
         get
         {
@@ -52,10 +55,7 @@ public class Voxel : IEquatable<Voxel>
                 _voxelGO.SetActive(Status == VoxelState.Alive);
         }
     }
-    /// <summary>
-    /// Get the centre point of the voxel in worldspace
-    /// </summary>
-    public Vector3 Centre => _voxelGrid.Origin + (Vector3)Index * _voxelGrid.VoxelSize + Vector3.one * 0.5f * _voxelGrid.VoxelSize;
+    
 
     /// <summary>
     /// Get and set the status of the voxel. When setting the status, the linked gameobject will be enable or disabled depending on the state.
@@ -72,6 +72,14 @@ public class Voxel : IEquatable<Voxel>
             _voxelStatus = value;
         }
     }
+    
+
+    /// <summary>
+    /// Get the centre point of the voxel in worldspace
+    /// </summary>
+    public Vector3 Centre => _voxelGrid.Origin + (Vector3)Index * _voxelGrid.VoxelSize + Vector3.one * 0.5f * _voxelGrid.VoxelSize;
+
+
 
     /// <summary>
     /// Creates a regular voxel on a voxel grid
@@ -117,7 +125,7 @@ public class Voxel : IEquatable<Voxel>
     }
 
     /// <summary>
-    /// Generic constructor, alllows the use of inheritance
+    /// Generic constructor, allows the use of inheritance
     /// </summary>
     public Voxel() { }
 
@@ -183,7 +191,6 @@ public class Voxel : IEquatable<Voxel>
     {
         IsActive = state;
     }
-
     #endregion
 
     #region Equality checks
