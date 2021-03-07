@@ -123,9 +123,8 @@ public class Component : MonoBehaviour
     {
         Voxel.IsOccupied = true;
         Voxel.voxelStatus = VoxelState.Dead;
-
-        string voxelInfo = Voxel.IsOccupied.ToString();
-        print(voxelInfo);
+        //string voxelInfo = Voxel.IsOccupied.ToString();
+        //print(voxelInfo);
     }
 
     /// <summary>

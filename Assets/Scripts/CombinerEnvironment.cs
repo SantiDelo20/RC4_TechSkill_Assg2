@@ -19,9 +19,19 @@ public class CombinerEnvironment : MonoBehaviour
     public VoxelGrid VoxelGrid { get; private set; }
     Vector3Int _gridSize;
 
-    private bool _errase = false;
-    private bool _drawVoids = false;
+    #region private button bools
 
+    private bool _toggleVoids = true;
+    private bool _drawWithGrid = false;
+    private bool _drawWithVoids = false;
+    private bool _erase = false;
+    private bool _eraseGrid = false;
+    private bool _drawVoids = false;
+    private bool _genNewGrid = true;
+
+    #endregion
+
+ 
     // 01.2 The Agent that operates on this evironment
     CombinerAgent _agent;
 
@@ -30,8 +40,6 @@ public class CombinerEnvironment : MonoBehaviour
 
     // 01.4 The selected component
     Component _selected;
-    
-
 
     // 01.05 The Text object to display the current Void Ratio
     [SerializeField]
@@ -40,14 +48,22 @@ public class CombinerEnvironment : MonoBehaviour
     [SerializeField]
     Text _errasing;
 
-
     #endregion
 
     #region VoidGrid
+    //GUI
+    Rect _windowRect = new Rect(50, 300, 250, 400);
+    GUISkin _skin = null;
+   
+    //GUIStyle _style = new GUIStyle();
+
+    string _voxelSize = "0.8";
+    int _animatedCount;
+    Coroutine _animation;
 
     Grid3d _grid = null;
-    string _voxelSize = "0.8";
     GameObject _voids;
+
     List<(DenseGrid.Voxel, float)> _orderedVoxels = new List<(DenseGrid.Voxel, float)>();
 
     #endregion
@@ -56,52 +72,65 @@ public class CombinerEnvironment : MonoBehaviour
 
     void Start()
     {
-        // 02 Create the base VoxelGrid
-        _gridSize = new Vector3Int(5, 10, 5);
-        VoxelGrid = new VoxelGrid(_gridSize, transform.position, 1f);
-        
-        // 03 Create the array that will store the environment's components
-        _components = new Component[_gridSize.x, _gridSize.y, _gridSize.z];
-
-        // 04 Get the Agent from the hierarchy
-        _agent = transform.Find("CombinerAgent").GetComponent<CombinerAgent>();
-        
-        // 05 Get the Component prefab from resources
-        var componentPrefab = Resources.Load<GameObject>("Prefabs/Component");
-
-        // 06 Cycle through the VoxelGrid and create components
-        for (int x = 0; x < _gridSize.x; x++)
-        {
-            for (int y = 0; y < _gridSize.y; y++)
-            {
-                for (int z = 0; z < _gridSize.z; z++)
-                {
-                    // 07 Get the Voxel
-                    var voxel = VoxelGrid.Voxels[x, y, z];
-                    // 08 Create new component at voxel
-                    var newComponentGO = Instantiate(componentPrefab, voxel.Index + transform.position, Quaternion.identity, transform);
-                    // 09 Name component based on location
-                    newComponentGO.name = $"Component_{x}_{y}_{z}";
-                    // 10 Get the Component from the GameObject
-                    var newComponent = newComponentGO.GetComponent<Component>();
-                    // 11 Store the component at the components array
-                    _components[x, y, z] = newComponent;
-                    // 12 Assign the Voxel to the Component
-                    newComponent.SetVoxel(voxel);
-                    // 13 Set the state of the Component as 0 (empty state)
-                    newComponent.ChangeState(0);
-                }
-            }
-        }
+        _voids = GameObject.Find("Voids");
+        //CreateVoxelGrid();
     }
 
+    void OnGUI()
+    {
+        GUI.skin = _skin;
+        GUI.skin.label.fontSize = 20; //not working
+        //_skin = Resources.Load<GUISkin>($"GUI/GUISkin1");
+        //_skin.fontSize = 20;
+
+        _windowRect = GUI.Window(0, _windowRect, WindowFunction, string.Empty);
+    }
+
+    void WindowFunction(int windowID)
+    {
+        int i = 1;
+        int s = 50;
+
+        _voxelSize = GUI.TextField(new Rect(s / 2, s * i++, 200, 40), _voxelSize);
+
+        if (GUI.Button(new Rect(s / 2, s * i++, 200, 40), "Generate"))
+            GrowVoxels();
+
+        if (GUI.Button(new Rect(s / 2, s * i++, 200, 40), "Purge ALL Voxels"))
+            ErraseVoxels();
+
+        if (_toggleVoids != GUI.Toggle(new Rect(s / 2, s * i++, 200, 40), _toggleVoids, "Show voids"))
+            ToggleVoids(!_toggleVoids);
+    }
 
     void Update()
     {
-        // 17 Draw the voxels using Drawing
-        DrawVoxels();
+        if(_drawWithGrid == true)
+        {
+            // 17 Draw the voxels using Drawing
+            while (_genNewGrid == true)
+            {
+                CreateVoxelGrid();
+            }
+            DrawVoxels();
+        }
+        
+        if (_drawWithVoids == true)
+        {
+            if (_grid == null) return;
 
-        if (_errase != true)
+            foreach (var (voxel, f) in _orderedVoxels.Take(_animatedCount))
+                Drawing.DrawTransparentCube(voxel.Center, _grid.VoxelSize);
+            //Drawing.DrawTransparentCube(((Vector3)voxel.Index * VoxelGrid.VoxelSize) + transform.position, VoxelGrid.VoxelSize);
+            /*
+            while (_eraseGrid == true)
+            {
+                ErraseVoxels();
+            }
+            */
+        }
+
+        if (_erase != true)
         {
             _errasing.text = $"Selecting Components";
 
@@ -171,6 +200,104 @@ public class CombinerEnvironment : MonoBehaviour
     #endregion
 
     #region Private Methods
+    private void GrowVoxels()
+    {
+        _drawWithVoids = true;
+
+        if (_eraseGrid == true)
+        {
+            ErraseVoxels();
+        }
+        //clear preexisting voxel grid.
+        _animatedCount = 0;
+        MakeGrid();
+
+        if (_animation != null) StopCoroutine(_animation);
+        _animation = StartCoroutine(GrowthAnimation());
+
+        ToggleVoids(false);
+    }
+    /// <summary>
+    /// Toggle voids, game object and selections
+    /// </summary>
+    /// <param name="toggle"></param>
+    void ToggleVoids(bool toggle)
+    {
+        foreach (var r in _voids.GetComponentsInChildren<Renderer>())
+        {
+            r.enabled = toggle;
+            r.GetComponent<MeshCollider>().enabled = toggle;
+        }
+            
+        _drawVoids = toggle;
+        _toggleVoids = toggle;
+    }
+    /// <summary>
+    /// Erasing to the ground
+    /// </summary>
+    private void ErraseVoxels()
+    {
+        int voxelCount = VoxelGrid.Voxels.Length;
+        print(voxelCount);
+        for (int x = 0; x < _gridSize.x; x++)
+        {
+            for (int y = 0; y < _gridSize.x; y++)
+            {
+                for (int z = 0; z < _gridSize.x; z++)
+                {
+                    VoxelGrid.Voxels[x, y, z] = null;
+                }
+            }
+        }
+        Debug.Log("_grid cleared");
+
+        _eraseGrid = false;
+    }
+    /// <summary>
+    /// Create a matrix xyz grid
+    /// </summary>
+    private void CreateVoxelGrid()
+    {
+        // 02 Create the base VoxelGrid
+        _gridSize = new Vector3Int(5, 10, 5);
+        VoxelGrid = new VoxelGrid(_gridSize, transform.position, 1f);
+
+        // 03 Create the array that will store the environment's components
+        _components = new Component[_gridSize.x, _gridSize.y, _gridSize.z];
+
+        // 04 Get the Agent from the hierarchy
+        _agent = transform.Find("CombinerAgent").GetComponent<CombinerAgent>();
+
+        // 05 Get the Component prefab from resources
+        var componentPrefab = Resources.Load<GameObject>("Prefabs/Component");
+
+        // 06 Cycle through the VoxelGrid and create components
+        for (int x = 0; x < _gridSize.x; x++)
+        {
+            for (int y = 0; y < _gridSize.y; y++)
+            {
+                for (int z = 0; z < _gridSize.z; z++)
+                {
+                    // 07 Get the Voxel
+                    var voxel = VoxelGrid.Voxels[x, y, z];
+                    // 08 Create new component at voxel
+                    var newComponentGO = Instantiate(componentPrefab, voxel.Index + transform.position, Quaternion.identity, transform);
+                    // 09 Name component based on location
+                    newComponentGO.name = $"Component_{x}_{y}_{z}";
+                    // 10 Get the Component from the GameObject
+                    var newComponent = newComponentGO.GetComponent<Component>();
+                    // 11 Store the component at the components array
+                    _components[x, y, z] = newComponent;
+                    // 12 Assign the Voxel to the Component
+                    newComponent.SetVoxel(voxel);
+                    // 13 Set the state of the Component as 0 (empty state)
+                    newComponent.ChangeState(0);
+                }
+            }
+        }
+        _genNewGrid = false;
+    }
+
     //14 Create the DrawVoxels method
     /// <summary>
     /// Uses <see cref="Drawing"/> to draw voxels without gameobjects
@@ -190,7 +317,10 @@ public class CombinerEnvironment : MonoBehaviour
             {
                 if (_drawVoids == true)
                 {
-                    Drawing.DrawTransparentCubeVoids(((Vector3)voxel.Index * VoxelGrid.VoxelSize) + transform.position, VoxelGrid.VoxelSize);
+                    if (voxel.IsVoid)
+                    {
+                        Drawing.DrawTransparentCubeVoids(((Vector3)voxel.Index * VoxelGrid.VoxelSize) + transform.position, VoxelGrid.VoxelSize);
+                    }
                 }
             }
 
@@ -198,7 +328,7 @@ public class CombinerEnvironment : MonoBehaviour
     }
 
     /// <summary>
-    /// Added method, manual erase
+    /// Added method, manual erase collider box toggle
     /// </summary>
     private void EraseRaycast()
     {
@@ -215,7 +345,7 @@ public class CombinerEnvironment : MonoBehaviour
                 _selected.ClearComponent();
                 _selected.Voxel.IsVoid = true;
 
-                string infoB = _selected.ToString();//prints comonent name with coordinates
+                string infoB = _selected.ToString();//prints component name with coordinates
                 print(infoB);
                 
             }
@@ -280,14 +410,17 @@ public class CombinerEnvironment : MonoBehaviour
 
     // 55 Create method to read the void ratio
     /// <summary>
-    /// Calculate the ratio of voids in the current configuration
+    /// Calculate the ratio of voids in the current configuration, modded to not count intended voids or voids that shoud stay as voids.
     /// </summary>
     /// <returns>The ratio as a float</returns>
     public float GetVoidRatio()
     {
         // 56 Calculate the amount of voids
+        float nonAccessVoids = VoxelGrid.GetVoxels().Count(v => v.IsVoid);
         float voidCount = VoxelGrid.GetVoxels().Count(v => !v.IsOccupied);
-        return voidCount / (_gridSize.x * _gridSize.y * _gridSize.z);
+        //print(nonAccessVoids);
+        //print(voidCount);
+        return voidCount / ((_gridSize.x * _gridSize.y * _gridSize.z) - nonAccessVoids);//Add correction for manual non fillable voids. (nonAccessVoids)
     }
 
     /// <summary>
@@ -330,23 +463,44 @@ public class CombinerEnvironment : MonoBehaviour
     /// Method to manualy errase voxels before the agent tries to aggregate patterns
     /// </summary>
     /// <param name="screenPosition"></param>
-
+    IEnumerator GrowthAnimation()
+    {
+        while (_animatedCount < _orderedVoxels.Count)
+        {
+            _animatedCount++;
+            yield return new WaitForSeconds(0.0005f);
+        }
+    }
 
     #endregion
 
-    #region public methods
-
+    #region button bools
+    //Grid Options
+    public void StartRegularGrid()
+    {
+        _drawWithGrid = true;
+        _genNewGrid = true;
+        Debug.Log("Generate matrix grid");
+    }
+    public void StartVoidGrid()
+    {
+        _drawWithVoids = true;
+        _eraseGrid = true;
+        Debug.Log("Generating Around Voids");
+    }
     //Errase buttons
     public void StartEraseRayCast()
     {
-        _errase = true;
+        _erase = true;
         Debug.Log("Erase set to true");
     }
     public void StopEraseRayCast()
     {
-        _errase = false;
+        _erase = false;
         Debug.Log("Erase set to false");
     }
+
+    //Draw options
     public void ShowVoidVoxels()
     {
         _drawVoids = true;
@@ -358,6 +512,7 @@ public class CombinerEnvironment : MonoBehaviour
         Debug.Log("HideVoids");
     }
 
+    //Star the agent
     public void ReleaseAgent()
     {
         _agent.UnfreezeAgent();
