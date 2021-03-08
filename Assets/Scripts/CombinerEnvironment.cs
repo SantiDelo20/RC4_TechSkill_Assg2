@@ -313,12 +313,10 @@ public class CombinerEnvironment : MonoBehaviour
     /// </summary>
     private void CreateVoidGrid()
     {
-        var colliders = _voids
-                      .GetComponentsInChildren<MeshCollider>()
-                      .ToArray();
+        var colliders = _voids.GetComponentsInChildren<MeshCollider>().ToArray();
 
         var voxelSize = float.Parse(_voxelSize);
-        _grid3D = Grid3d.MakeGridWithVoids(colliders, voxelSize);
+        _grid3D = Grid3d.MakeGridWithVoids(colliders, voxelSize, false);
 
         //Get the Bbox gridsize, Basically the Bounding box property
         _grid3dSize = _grid3D.Size; //works
