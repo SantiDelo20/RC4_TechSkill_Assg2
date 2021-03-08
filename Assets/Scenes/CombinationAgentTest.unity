@@ -916,7 +916,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e16ad54e47633842b89aebc33906ccc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TrainingWithVoidGrid: 0
+  TrainingWithVoidGrid: 1
   TrainingWithVoxelGrid: 0
   _voidRatio: {fileID: 1342818956}
   _errasing: {fileID: 2175560}

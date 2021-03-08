@@ -78,15 +78,23 @@ public class CombinerEnvironment : MonoBehaviour
 
     void Start()
     {
+        // 04 Get the Agent from the hierarchy
+        _agent = transform.Find("CombinerAgent").GetComponent<CombinerAgent>();
+
         _voids = GameObject.Find("Voids");
         if (TrainingWithVoidGrid == true)
         {
+            
             CreateVoidGrid();
+            ToggleVoidsGo(_toggleVoidsGo);
+            ToggleVoids(_toggleVoids);
             _drawWithVoids = true;
         }
         if (TrainingWithVoxelGrid == true)
         {
             CreateVoxelGrid();
+            ToggleVoidsGo(_toggleVoidsGo);
+            ToggleVoids(_toggleVoids);
             _drawWithVoxels = true;
         }
     }
@@ -276,7 +284,7 @@ public class CombinerEnvironment : MonoBehaviour
         _components = new Component[_gridSize.x, _gridSize.y, _gridSize.z];
 
         // 04 Get the Agent from the hierarchy
-        _agent = transform.Find("CombinerAgent").GetComponent<CombinerAgent>();
+        //_agent = transform.Find("CombinerAgent").GetComponent<CombinerAgent>();
 
         // 05 Get the Component prefab from resources
         var componentPrefab = Resources.Load<GameObject>("Prefabs/Component");
@@ -326,8 +334,7 @@ public class CombinerEnvironment : MonoBehaviour
         //03 Create the array that will store the environment's components
         _components = new Component[_grid3dSize.x, _grid3dSize.y, _grid3dSize.z];
 
-        // 04 Get the Agent from the hierarchy
-        _agent = transform.Find("CombinerAgent").GetComponent<CombinerAgent>();
+        
 
         // 05 Get the Component prefab from resources
         var componentPrefab = Resources.Load<GameObject>("Prefabs/Component");
