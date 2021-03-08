@@ -23,8 +23,8 @@ public class CombinerEnvironment : MonoBehaviour
 
     private bool _toggleVoids = true;
     private bool _toggleVoidsGo = true;
-    private bool _drawWithGrid = false;
-    private bool _drawWithVoids = false;
+    public bool _drawWithGrid = false;
+    public bool _drawWithVoids = false;
     private bool _erase = false;
     private bool _eraseGrid = false;
     private bool _drawVoids = false;
@@ -53,16 +53,17 @@ public class CombinerEnvironment : MonoBehaviour
 
     #region VoidGrid
     //GUI
-    Rect _windowRect = new Rect(50, 300, 250, 400);
+    Rect _windowRect = new Rect(40, 300, 250, 400);
     GUISkin _skin = null;
    
     //GUIStyle _style = new GUIStyle();
 
-    string _voxelSize = "0.8";
+    string _voxelSize = "0.96";
     int _animatedCount;
     Coroutine _animation;
 
-    Grid3d _grid = null;
+    Grid3d _grid3D = null;
+    Vector3Int _grid3dSize;
     GameObject _voids;
 
     List<(DenseGrid.Voxel, float)> _orderedVoxels = new List<(DenseGrid.Voxel, float)>();
@@ -95,7 +96,7 @@ public class CombinerEnvironment : MonoBehaviour
         _voxelSize = GUI.TextField(new Rect(s / 2, s * i++, 200, 40), _voxelSize);
 
         if (GUI.Button(new Rect(s / 2, s * i++, 200, 40), "Generate"))
-            GrowVoxels();
+            GrowVoxels(); //GrowVoxels()
 
         if (GUI.Button(new Rect(s / 2, s * i++, 200, 40), "Purge ALL Voxels"))
             ErraseVoxels();
@@ -120,16 +121,24 @@ public class CombinerEnvironment : MonoBehaviour
         
         if (_drawWithVoids == true)
         {
-            
+
+            //while (_genNewGrid == true)
+            //{
+            //    MakeVoidGrid();
+            //}
             //while (_eraseGrid == true)
             //{
             //    ErraseVoxels();
             //}
-            
-            if (_grid == null) return;
 
-            foreach (var (voxel, f) in _orderedVoxels.Take(_animatedCount))
-                Drawing.DrawTransparentCube(voxel.Center, _grid.VoxelSize);
+            DrawVoxels();
+            if (_grid3D == null) return;
+
+            //use with GrowVoxels()
+
+            //foreach (var (voxel, f) in _orderedVoxels.Take(_animatedCount))
+            //    Drawing.DrawTransparentCube(voxel.Center, _grid3D.VoxelSize);
+
             
         }
 
@@ -203,23 +212,25 @@ public class CombinerEnvironment : MonoBehaviour
     #endregion
 
     #region Private Methods
+
     private void GrowVoxels()
     {
         _drawWithVoids = true;
 
-        if (_eraseGrid == true)
-        {
-            ErraseVoxels();
-        }
+        //if (_eraseGrid == true)
+        //{
+        //    ErraseVoxels();
+        //}
         //clear preexisting voxel grid.
-        _animatedCount = 0;
-        MakeGrid();
+        //_animatedCount = 0;
+        MakeVoidGrid();
 
-        if (_animation != null) StopCoroutine(_animation);
-        _animation = StartCoroutine(GrowthAnimation());
+        //if (_animation != null) StopCoroutine(_animation);
+        //_animation = StartCoroutine(GrowthAnimation());
 
         ToggleVoids(false);
     }
+
     /// <summary>
     /// Toggle voids, game object and selections
     /// </summary>
@@ -302,6 +313,121 @@ public class CombinerEnvironment : MonoBehaviour
                     // 13 Set the state of the Component as 0 (empty state)
                     newComponent.ChangeState(0);
                 }
+            }
+        }
+        _genNewGrid = false;
+    }
+
+    /// <summary>
+    /// Trying to make more complex aggregations. Method From https://github.com/ADRC4/Voxel
+    /// </summary>
+    private void MakeVoidGrid()
+    {
+        var colliders = _voids
+                      .GetComponentsInChildren<MeshCollider>()
+                      .ToArray();
+
+        var voxelSize = float.Parse(_voxelSize);
+        _grid3D = Grid3d.MakeGridWithVoids(colliders, voxelSize);
+        /*
+        var faces = _grid3D.GetFaces().Where(f => f.IsActive);
+        var graphEdges = faces.Select(f => new TaggedEdge<DenseGrid.Voxel, DenseGrid.Face>(f.Voxels[0], f.Voxels[1], f));
+
+        var graph = graphEdges.ToUndirectedGraph<DenseGrid.Voxel, TaggedEdge<DenseGrid.Voxel, DenseGrid.Face>>();
+
+        var bottomSlab = _grid3D
+                            .GetVoxels()
+                            .Where(v => v.IsActive && v.Index.y == 0)
+                            .ToList();
+
+        var bottomCentroid = _grid3D.BBox.center;
+        bottomCentroid.y = 0;
+
+        var startVoxel = bottomSlab.MinBy(v => (v.Center - bottomCentroid).sqrMagnitude);
+        var shortest = graph.ShortestPathsDijkstra(e => 1.0, startVoxel);
+
+        _orderedVoxels = _grid3D
+                          .GetVoxels()
+                          .Where(v => v.IsActive)
+                          .Select(v => (v, shortest(v, out var path) ? path.Count() + UnityEngine.Random.value * 0.9f : float.MaxValue))
+                          .OrderBy(p => p.Item2)
+                          .Select(p => (p.v, p.Item2 / 30f))
+                          .ToList();
+        */
+
+        //Get the Bbox gridsize, Basically the Bounding box property
+        _grid3dSize = _grid3D.Size; //works
+
+        VoxelGrid = new VoxelGrid(_grid3dSize, transform.position, 1f);
+
+        //03 Create the array that will store the environment's components
+        _components = new Component[_grid3dSize.x, _grid3dSize.y, _grid3dSize.z];
+
+        // 04 Get the Agent from the hierarchy
+        _agent = transform.Find("CombinerAgent").GetComponent<CombinerAgent>();
+
+        // 05 Get the Component prefab from resources
+        var componentPrefab = Resources.Load<GameObject>("Prefabs/Component");
+
+        
+        for (int x = 0; x < _grid3dSize.x; x++)
+        {
+            for (int y = 0; y < _grid3dSize.y; y++)
+            {
+                for (int z = 0; z < _grid3dSize.z; z++)
+                {
+                    // Get the voxel
+                    var voxelVoidGrid = _grid3D.Voxels[x, y, z];//is it here where we should find the void properties?
+
+                    var voxel = VoxelGrid.Voxels[x, y, z];//Seems to be the thing that works with the component
+
+                    //-----------------------------------------------Voidsss check
+                    if (voxelVoidGrid.IsActive) //filter works, //places components out of the Voids.
+                    {
+                        //If not in a gameobject void, create a component
+                        var newComponentGO = Instantiate(componentPrefab, voxel.Index + transform.position, Quaternion.identity, transform);
+
+                        newComponentGO.name = $"Component_{x}_{y}_{z}";
+
+                        var newComponent = newComponentGO.GetComponent<Component>();
+
+                        _components[x, y, z] = newComponent;
+                        newComponent.SetVoxel(voxel);
+                        newComponent.ChangeState(0);
+                        Debug.Log($"Placed Component_{x}_{y}_{z}");
+
+                        voxel.IsVoid = false;
+                        //Check is possition 
+                    }
+                    else
+                    {
+                        //Voxels without component still render as transparent
+                        var newComponentGO = Instantiate(componentPrefab, voxel.Index + transform.position, Quaternion.identity, transform);
+
+                        newComponentGO.name = $"Component_{x}_{y}_{z}";
+                        var newComponent = newComponentGO.GetComponent<Component>();
+                        _components[x, y, z] = newComponent;
+                        newComponent.SetVoxel(voxel);
+                        newComponent.ChangeState(0);
+
+                        Debug.Log("Voxel NotActive");
+                        voxel.IsVoid = true;
+                        voxel.IsOccupied = true;
+                    }
+
+                }
+            }
+        }
+
+        foreach (var voxel in _grid3D.Voxels)
+        {
+            if (voxel.IsActive)
+            {
+                Debug.Log("IsActive");
+            }
+            else
+            {
+                Debug.Log("NotActive");
             }
         }
         _genNewGrid = false;
@@ -424,50 +550,32 @@ public class CombinerEnvironment : MonoBehaviour
     /// <returns>The ratio as a float</returns>
     public float GetVoidRatio()
     {
-        // 56 Calculate the amount of voids
-        float nonAccessVoids = VoxelGrid.GetVoxels().Count(v => v.IsVoid);
-        float voidCount = VoxelGrid.GetVoxels().Count(v => !v.IsOccupied);
-        //print(nonAccessVoids);
-        //print(voidCount);
-        return voidCount / ((_gridSize.x * _gridSize.y * _gridSize.z) - nonAccessVoids);//Add correction for manual non fillable voids. (nonAccessVoids)
-    }
-
-    /// <summary>
-    /// Trying to make more complex aggregations. Method From https://github.com/ADRC4/Voxel
-    /// </summary>
-    void MakeGrid()
-    {
-        var colliders = _voids
-                      .GetComponentsInChildren<MeshCollider>()
-                      .ToArray();
-
-        var voxelSize = float.Parse(_voxelSize);
-        _grid = Grid3d.MakeGridWithVoids(colliders, voxelSize);
+        if (_drawWithGrid == true)
+        {
+            // 56 Calculate the amount of voids
+            float nonAccessVoids = VoxelGrid.GetVoxels().Count(v => v.IsVoid);
+            float voidCount = VoxelGrid.GetVoxels().Count(v => !v.IsOccupied);
+            //print(nonAccessVoids);
+            //print(voidCount);
+            return voidCount / ((_gridSize.x * _gridSize.y * _gridSize.z) - nonAccessVoids);//Add correction for manual non fillable voids. (nonAccessVoids)
+        }
+        if (_drawWithVoids == true)
+        {
+            // 56 Calculate the amount of voids
+            float nonAccessVoids = VoxelGrid.GetVoxels().Count(v => v.IsVoid);
+            float voidCount = VoxelGrid.GetVoxels().Count(v => !v.IsOccupied);
+            //print(nonAccessVoids);
+            //print(voidCount);
+            return voidCount / ((_grid3dSize.x * _grid3dSize.y * _grid3dSize.z) - nonAccessVoids);//Add correction for manual non fillable voids. (nonAccessVoids)
+        }
+        else
+        {
+            return 0;
+        }
         
-        var faces = _grid.GetFaces().Where(f => f.IsActive);
-        var graphEdges = faces.Select(f => new TaggedEdge<DenseGrid.Voxel, DenseGrid.Face>(f.Voxels[0], f.Voxels[1], f));
-
-        var graph = graphEdges.ToUndirectedGraph<DenseGrid.Voxel, TaggedEdge<DenseGrid.Voxel, DenseGrid.Face>>();
-
-        var bottomSlab = _grid
-                            .GetVoxels()
-                            .Where(v => v.IsActive && v.Index.y == 0)
-                            .ToList();
-
-        var bottomCentroid = _grid.BBox.center;
-        bottomCentroid.y = 0;
-
-        var startVoxel = bottomSlab.MinBy(v => (v.Center - bottomCentroid).sqrMagnitude);
-        var shortest = graph.ShortestPathsDijkstra(e => 1.0, startVoxel);
-
-        _orderedVoxels = _grid
-                          .GetVoxels()
-                          .Where(v => v.IsActive)
-                          .Select(v => (v, shortest(v, out var path) ? path.Count() + UnityEngine.Random.value * 0.9f : float.MaxValue))
-                          .OrderBy(p => p.Item2)
-                          .Select(p => (p.v, p.Item2 / 30f))
-                          .ToList();
     }
+
+    
     /// <summary>
     /// Method to manualy errase voxels before the agent tries to aggregate patterns
     /// </summary>
@@ -494,7 +602,9 @@ public class CombinerEnvironment : MonoBehaviour
     public void StartVoidGrid()
     {
         _drawWithVoids = true;
-        _eraseGrid = true;
+        _genNewGrid = true;
+        //_eraseGrid = true;
+        
         Debug.Log("Generating Around Voids");
     }
     //Errase buttons

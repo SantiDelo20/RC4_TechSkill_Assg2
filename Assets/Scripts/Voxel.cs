@@ -214,5 +214,10 @@ public class Voxel : IEquatable<Voxel>
         return Index.GetHashCode();
     }
 
+    public static implicit operator Voxel(DenseGrid.Voxel v)
+    {
+        throw new NotImplementedException();
+    }
+
     #endregion
 }

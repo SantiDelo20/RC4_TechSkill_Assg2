@@ -244,12 +244,18 @@ public class CombinerAgent : Agent
         // 35 Get the target voxel
         var voxel = _voxelGrid.Voxels[index.x, index.y, index.z];
         _voxelLocation = voxel;
-        
+
         // 36 Move agent game object to target position
         transform.localPosition = voxel.Index;
-        
+
         // 37 Get the component at the target position -> create Method
         _component = _environment.GetComponentAtVoxel(_voxelLocation);
+
+        //while (_environment._drawWithGrid == true)
+        //{
+            
+        //}
+      
     }
 
     // 74 Create method to unfreeze agent

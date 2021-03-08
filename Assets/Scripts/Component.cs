@@ -8,7 +8,7 @@ public class Component : MonoBehaviour
 {
     // The voxel this component is assigned to
     public Voxel Voxel { get; private set; }
-    
+    public DenseGrid.Voxel Voxel3D { get; private set; }
     // The state of the component
     public int State { get; private set; }
 
@@ -117,6 +117,11 @@ public class Component : MonoBehaviour
     public void SetVoxel(Voxel voxel)
     {
         Voxel = voxel;
+    }
+
+    public void Set3DVoxel(DenseGrid.Voxel voxel)
+    {
+        Voxel3D = voxel;
     }
 
     public void ClearComponent()
