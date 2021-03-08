@@ -22,6 +22,7 @@ public class CombinerEnvironment : MonoBehaviour
     #region private button bools
 
     private bool _toggleVoids = true;
+    private bool _toggleVoidsGo = true;
     private bool _drawWithGrid = false;
     private bool _drawWithVoids = false;
     private bool _erase = false;
@@ -99,8 +100,10 @@ public class CombinerEnvironment : MonoBehaviour
         if (GUI.Button(new Rect(s / 2, s * i++, 200, 40), "Purge ALL Voxels"))
             ErraseVoxels();
 
-        if (_toggleVoids != GUI.Toggle(new Rect(s / 2, s * i++, 200, 40), _toggleVoids, "Show voids"))
+        if (_toggleVoids != GUI.Toggle(new Rect(s / 2, s * i++, 200, 40), _toggleVoids, "Show UserInput voids"))
             ToggleVoids(!_toggleVoids);
+        if (_toggleVoidsGo != GUI.Toggle(new Rect(s / 2, s * i++, 200, 40), _toggleVoidsGo, "Show GameObject voids"))
+            ToggleVoidsGo(!_toggleVoidsGo);
     }
 
     void Update()
@@ -117,17 +120,17 @@ public class CombinerEnvironment : MonoBehaviour
         
         if (_drawWithVoids == true)
         {
+            
+            //while (_eraseGrid == true)
+            //{
+            //    ErraseVoxels();
+            //}
+            
             if (_grid == null) return;
 
             foreach (var (voxel, f) in _orderedVoxels.Take(_animatedCount))
                 Drawing.DrawTransparentCube(voxel.Center, _grid.VoxelSize);
-            //Drawing.DrawTransparentCube(((Vector3)voxel.Index * VoxelGrid.VoxelSize) + transform.position, VoxelGrid.VoxelSize);
-            /*
-            while (_eraseGrid == true)
-            {
-                ErraseVoxels();
-            }
-            */
+            
         }
 
         if (_erase != true)
@@ -223,14 +226,20 @@ public class CombinerEnvironment : MonoBehaviour
     /// <param name="toggle"></param>
     void ToggleVoids(bool toggle)
     {
+        
+        _drawVoids = toggle;
+        _toggleVoids = toggle;
+    }
+    void ToggleVoidsGo(bool toggle)
+    {
         foreach (var r in _voids.GetComponentsInChildren<Renderer>())
         {
             r.enabled = toggle;
             r.GetComponent<MeshCollider>().enabled = toggle;
         }
-            
+
         _drawVoids = toggle;
-        _toggleVoids = toggle;
+        _toggleVoidsGo = toggle;
     }
     /// <summary>
     /// Erasing to the ground
@@ -315,7 +324,7 @@ public class CombinerEnvironment : MonoBehaviour
             // Draw Void voxel if requested
             else
             {
-                if (_drawVoids == true)
+                if (_toggleVoids == true)
                 {
                     if (voxel.IsVoid)
                     {
