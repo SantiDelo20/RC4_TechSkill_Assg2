@@ -57,8 +57,8 @@ public class CombinerEnvironment : MonoBehaviour
     #endregion
 
     #region VoidGrid
-    //Used in the voidgrid method
-    string _voxelSize = "0.96";
+    //Used in the voidgrid method. use the same size as in the agent and in the drawing class for Transparent voxels.
+    float _voxelSize = 0.96f;
     Grid3d _grid3D = null;
     Vector3Int _grid3dSize;
     GameObject _voids;
@@ -178,9 +178,92 @@ public class CombinerEnvironment : MonoBehaviour
     #endregion
 
     #region Private Methods
+    //14 Create the DrawVoxels method
+    /// <summary>
+    /// Uses <see cref="Drawing"/> to draw voxels without gameobjects
+    /// </summary>
+    private void DrawVoxels()
+    {
+        // 15 Iterate through all voxles
+        foreach (var voxel in VoxelGrid.Voxels)
+        {
+            // 16 Draw voxel if it is not occupied
+            if (!voxel.IsOccupied)
+            {
+                Drawing.DrawTransparentCube(((Vector3)voxel.Index * VoxelGrid.VoxelSize) + transform.position, VoxelGrid.VoxelSize);
+            }
+            // Draw Void voxel if requested
+            else
+            {
+                if (_toggleVoids == true)
+                {
+                    if (voxel.IsVoid)
+                    {
+                        Drawing.DrawTransparentCubeVoids(((Vector3)voxel.Index * VoxelGrid.VoxelSize) + transform.position, VoxelGrid.VoxelSize);
+                    }
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Added method, manual erase collider box toggle
+    /// </summary>
+    private void EraseRaycast()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+        if (Physics.Raycast(ray, out RaycastHit hit))
+        {
+            Transform objectHit = hit.transform;
+
+            if (objectHit.CompareTag("Component"))
+            {
+                _selected = objectHit.gameObject.GetComponent<Component>();
+                _selected.GetComponent<BoxCollider>().enabled = false;
+                _selected.ClearComponent();
+                _selected.Voxel.IsVoid = true;
+
+                string infoB = _selected.ToString();//prints component name with coordinates
+                print(infoB);
+
+            }
+        }
+    }
+
+    //19 Create the method to select component by clicking
+    /// <summary>
+    /// Select a component and assign Agent position with mouse click
+    /// </summary>
+    private void SelectComponent()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+        if (Physics.Raycast(ray, out RaycastHit hit))
+        {
+            Transform objectHit = hit.transform;
+
+            if (objectHit.CompareTag("Component"))
+            {
+                // 20 Assign clicked component to the selected variable
+                _selected = objectHit.GetComponent<Component>();
+
+                // 75 Set the position of the agent at the clicked voxel
+                var pos = objectHit.transform.localPosition;
+                Vector3Int posInt = new Vector3Int((int)pos.x, (int)pos.y, (int)pos.z);
+                _agent.GoToVoxel(posInt);
+            }
+        }
+        else
+        {
+            _selected = null;
+        }
+    }
+
+    #endregion
 
     //Grid Options
-
+    #region private Grid generation methods
     /// <summary>
     /// Create a matrix xyz grid
     /// </summary>
@@ -234,8 +317,7 @@ public class CombinerEnvironment : MonoBehaviour
         //ToggleVoidsGo(_toggleVoidsGo);
         //Gen. bounding box grid
         var colliders = _voids.GetComponentsInChildren<MeshCollider>().ToArray();
-        var voxelSize = float.Parse(_voxelSize);
-        _grid3D = Grid3d.MakeGridWithVoids(colliders, voxelSize, false);
+        _grid3D = Grid3d.MakeGridWithVoids(colliders, _voxelSize, false);
 
         //Get the Bbox gridsize, the Bounding box property
         _grid3dSize = _grid3D.Size; //works
@@ -291,88 +373,6 @@ public class CombinerEnvironment : MonoBehaviour
             }
         }
         _genNewGrid = false;
-    }
-
-    //14 Create the DrawVoxels method
-    /// <summary>
-    /// Uses <see cref="Drawing"/> to draw voxels without gameobjects
-    /// </summary>
-    private void DrawVoxels()
-    {
-        // 15 Iterate through all voxles
-        foreach (var voxel in VoxelGrid.Voxels)
-        {
-            // 16 Draw voxel if it is not occupied
-            if (!voxel.IsOccupied)
-            {
-                Drawing.DrawTransparentCube(((Vector3)voxel.Index * VoxelGrid.VoxelSize) + transform.position, VoxelGrid.VoxelSize);
-            }
-            // Draw Void voxel if requested
-            else
-            {
-                if (_toggleVoids == true)
-                {
-                    if (voxel.IsVoid)
-                    {
-                        Drawing.DrawTransparentCubeVoids(((Vector3)voxel.Index * VoxelGrid.VoxelSize) + transform.position, VoxelGrid.VoxelSize);
-                    }
-                }
-            }
-        }
-    }
-
-    /// <summary>
-    /// Added method, manual erase collider box toggle
-    /// </summary>
-    private void EraseRaycast()
-    {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-        if (Physics.Raycast(ray, out RaycastHit hit))
-        {
-            Transform objectHit = hit.transform;
-
-            if (objectHit.CompareTag("Component"))
-            {
-                _selected = objectHit.gameObject.GetComponent<Component>();
-                _selected.GetComponent<BoxCollider>().enabled = false;
-                _selected.ClearComponent();
-                _selected.Voxel.IsVoid = true;
-
-                string infoB = _selected.ToString();//prints component name with coordinates
-                print(infoB);
-                
-            }
-        }
-    }
-
-    //19 Create the method to select component by clicking
-    /// <summary>
-    /// Select a component and assign Agent position with mouse click
-    /// </summary>
-    private void SelectComponent()
-    {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-        if (Physics.Raycast(ray, out RaycastHit hit))
-        {
-            Transform objectHit = hit.transform;
-
-            if (objectHit.CompareTag("Component"))
-            {
-                // 20 Assign clicked component to the selected variable
-                _selected = objectHit.GetComponent<Component>();
-
-                // 75 Set the position of the agent at the clicked voxel
-                var pos = objectHit.transform.localPosition;
-                Vector3Int posInt = new Vector3Int((int)pos.x, (int)pos.y, (int)pos.z);
-                _agent.GoToVoxel(posInt);
-            }
-        }
-        else
-        {
-            _selected = null;
-        }
     }
 
     #endregion
