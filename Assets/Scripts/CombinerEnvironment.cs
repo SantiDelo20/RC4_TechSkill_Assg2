@@ -74,7 +74,6 @@ public class CombinerEnvironment : MonoBehaviour
         _voids = GameObject.Find("Voids");
         if (TrainingWithVoidGrid == true)
         {
-            
             CreateVoidGrid();
             ToggleVoidsGo(_toggleVoidsGo);
             ToggleVoids(_toggleVoids);
@@ -91,21 +90,28 @@ public class CombinerEnvironment : MonoBehaviour
 
     void Update()
     {
+        //VOids go mesh colider
+        /*
+        if (_toggleVoidsGo == true)
+        {
+            ToggleVoidsGo(_toggleVoidsGo);
+        }
+        else
+        {
+            ToggleVoidsGo(_toggleVoidsGo);
+        }
+        */
         if(_drawWithVoxels == true)
         {
-            // 17 Draw the voxels using Drawing
             while (_genNewGrid == true)
             {
                 CreateVoxelGrid();
             }
             DrawVoxels();
         }
-        
         if (_drawWithVoids == true)
         {
-
             DrawVoxels();
-   
         }
 
         if (_erase != true)
@@ -364,6 +370,8 @@ public class CombinerEnvironment : MonoBehaviour
                         _components[x, y, z] = newComponent;
                         newComponent.SetVoxel(voxel);
                         newComponent.ChangeState(0);
+                        //solves a bug in errasing, void voxels still had box coliders, makes this component unselectable.
+                        newComponent.GetComponent<BoxCollider>().enabled = false; 
 
                         Debug.Log("Voxel NotActive");
                         voxel.IsVoid = true;
@@ -453,10 +461,7 @@ public class CombinerEnvironment : MonoBehaviour
     #endregion
 
     #region button bools
-    /// <summary>
-    /// Toggle voids, game object and selections
-    /// </summary>
-    /// <param name="toggle"></param>
+    
     public void ToggleVoids(bool toggle)
     {
 
@@ -492,7 +497,8 @@ public class CombinerEnvironment : MonoBehaviour
         //Activate the voids so they can be used by the bounding box method
         ToggleVoidsGo(_toggleVoidsGo);
         CreateVoidGrid();
-
+        //Deactivate
+        ToggleVoidsGo(!_toggleVoidsGo);
         Debug.Log("Generating Around Voids");
     }
 
