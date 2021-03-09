@@ -60,17 +60,15 @@ public class CombinerEnvironment : MonoBehaviour
     //GUI
     Rect _windowRect = new Rect(40, 300, 250, 400);
     GUISkin _skin = null;
-   
-    //GUIStyle _style = new GUIStyle();
 
     string _voxelSize = "0.96";
-    int _animatedCount;
+    
 
     Grid3d _grid3D = null;
     Vector3Int _grid3dSize;
     GameObject _voids;
-
-    List<(DenseGrid.Voxel, float)> _orderedVoxels = new List<(DenseGrid.Voxel, float)>();
+    //int _animatedCount;
+    //List<(DenseGrid.Voxel, float)> _orderedVoxels = new List<(DenseGrid.Voxel, float)>();
 
     #endregion
 
@@ -79,7 +77,7 @@ public class CombinerEnvironment : MonoBehaviour
     void Start()
     {
         // 04 Get the Agent from the hierarchy
-        _agent = transform.Find("CombinerAgent").GetComponent<CombinerAgent>();
+        //_agent = transform.Find("CombinerAgent").GetComponent<CombinerAgent>();
 
         _voids = GameObject.Find("Voids");
         if (TrainingWithVoidGrid == true)
@@ -93,13 +91,14 @@ public class CombinerEnvironment : MonoBehaviour
         if (TrainingWithVoxelGrid == true)
         {
             CreateVoxelGrid();
-            ToggleVoidsGo(_toggleVoidsGo);
-            ToggleVoids(_toggleVoids);
+            ToggleVoidsGo(!_toggleVoidsGo);
+            ToggleVoids(!_toggleVoids);
             _drawWithVoxels = true;
         }
     }
 
     #region GUI
+    /*
     void OnGUI()
     {
         GUI.skin = _skin;
@@ -128,6 +127,7 @@ public class CombinerEnvironment : MonoBehaviour
         if (_toggleVoidsGo != GUI.Toggle(new Rect(s / 2, s * i++, 200, 40), _toggleVoidsGo, "Show GameObject voids"))
             ToggleVoidsGo(!_toggleVoidsGo);
     }
+    */
     #endregion
 
     void Update()
@@ -220,57 +220,8 @@ public class CombinerEnvironment : MonoBehaviour
 
     #region Private Methods
 
-    private void GrowVoxels()
-    {
-        _drawWithVoids = true;
+    //Grid Options
 
-        CreateVoidGrid();
-
-        ToggleVoids(false);
-    }
-
-    /// <summary>
-    /// Toggle voids, game object and selections
-    /// </summary>
-    /// <param name="toggle"></param>
-    void ToggleVoids(bool toggle)
-    {
-        
-        _drawVoids = toggle;
-        _toggleVoids = toggle;
-    }
-    void ToggleVoidsGo(bool toggle)
-    {
-        foreach (var r in _voids.GetComponentsInChildren<Renderer>())
-        {
-            r.enabled = toggle;
-            r.GetComponent<MeshCollider>().enabled = toggle;
-        }
-
-        _drawVoids = toggle;
-        _toggleVoidsGo = toggle;
-    }
-    /// <summary>
-    /// Erasing to the ground
-    /// </summary>
-    private void ErraseVoxels()
-    {
-        int voxelCount = VoxelGrid.Voxels.Length;
-        print(voxelCount);
-        for (int x = 0; x < _gridSize.x; x++)
-        {
-            for (int y = 0; y < _gridSize.x; y++)
-            {
-                for (int z = 0; z < _gridSize.x; z++)
-                {
-                    VoxelGrid.Voxels[x, y, z] = null;
-                }
-            }
-        }
-        Debug.Log("_grid cleared");
-
-        _eraseGrid = false;
-    }
     /// <summary>
     /// Create a matrix xyz grid
     /// </summary>
@@ -284,7 +235,7 @@ public class CombinerEnvironment : MonoBehaviour
         _components = new Component[_gridSize.x, _gridSize.y, _gridSize.z];
 
         // 04 Get the Agent from the hierarchy
-        //_agent = transform.Find("CombinerAgent").GetComponent<CombinerAgent>();
+        _agent = transform.Find("CombinerAgent").GetComponent<CombinerAgent>();
 
         // 05 Get the Component prefab from resources
         var componentPrefab = Resources.Load<GameObject>("Prefabs/Component");
@@ -321,25 +272,21 @@ public class CombinerEnvironment : MonoBehaviour
     /// </summary>
     private void CreateVoidGrid()
     {
+        ToggleVoidsGo(_toggleVoidsGo);
+        //Gen. bounding box grid
         var colliders = _voids.GetComponentsInChildren<MeshCollider>().ToArray();
-
         var voxelSize = float.Parse(_voxelSize);
         _grid3D = Grid3d.MakeGridWithVoids(colliders, voxelSize, false);
 
-        //Get the Bbox gridsize, Basically the Bounding box property
+        //Get the Bbox gridsize, the Bounding box property
         _grid3dSize = _grid3D.Size; //works
 
         VoxelGrid = new VoxelGrid(_grid3dSize, transform.position, 1f);
-
-        //03 Create the array that will store the environment's components
         _components = new Component[_grid3dSize.x, _grid3dSize.y, _grid3dSize.z];
-
-        
-
-        // 05 Get the Component prefab from resources
+        _agent = transform.Find("CombinerAgent").GetComponent<CombinerAgent>();
+       
         var componentPrefab = Resources.Load<GameObject>("Prefabs/Component");
 
-        
         for (int x = 0; x < _grid3dSize.x; x++)
         {
             for (int y = 0; y < _grid3dSize.y; y++)
@@ -351,9 +298,8 @@ public class CombinerEnvironment : MonoBehaviour
 
                     var voxel = VoxelGrid.Voxels[x, y, z];//Seems to be the thing that works with the component
 
-                    if (voxelVoidGrid.IsActive)//Non Voids check //filter works, //places components out of the Voids.
+                    if (voxelVoidGrid.IsActive)
                     {
-                        //If not in a gameobject void, create a component
                         var newComponentGO = Instantiate(componentPrefab, voxel.Index + transform.position, Quaternion.identity, transform);
 
                         newComponentGO.name = $"Component_{x}_{y}_{z}";
@@ -368,10 +314,8 @@ public class CombinerEnvironment : MonoBehaviour
                         voxel.IsVoid = false;
                         //Check is possition 
                     }
-                    else //Void objects
+                    else //Void objects, ////If in a gameobject void, create a component but set the voxel as occupied, and as void (for the rendering)
                     {
-                        //Voxels without component still render as transparent, also if theres no component the agent buggs out
-
                         var newComponentGO = Instantiate(componentPrefab, voxel.Index + transform.position, Quaternion.identity, transform);
 
                         newComponentGO.name = $"Component_{x}_{y}_{z}";
@@ -476,6 +420,27 @@ public class CombinerEnvironment : MonoBehaviour
     #endregion
 
     #region Public Methods
+    /// <summary>
+    /// Erasing to the ground
+    /// </summary>
+    public void ErraseGrid()
+    {
+        int voxelCount = VoxelGrid.Voxels.Length;
+        print(voxelCount);
+        for (int x = 0; x < _gridSize.x; x++)
+        {
+            for (int y = 0; y < _gridSize.x; y++)
+            {
+                for (int z = 0; z < _gridSize.x; z++)
+                {
+                    VoxelGrid.Voxels[x, y, z] = null;
+                }
+            }
+        }
+        Debug.Log("_grid cleared");
+
+        _eraseGrid = false;
+    }
 
     // 37.1 Create method to the component at a given voxel
     /// <summary>
@@ -530,7 +495,29 @@ public class CombinerEnvironment : MonoBehaviour
     #endregion
 
     #region button bools
-    //Grid Options
+    /// <summary>
+    /// Toggle voids, game object and selections
+    /// </summary>
+    /// <param name="toggle"></param>
+    public void ToggleVoids(bool toggle)
+    {
+
+        _drawVoids = toggle;
+        _toggleVoids = toggle;
+    }
+    public void ToggleVoidsGo(bool toggle)
+    {
+        foreach (var r in _voids.GetComponentsInChildren<Renderer>())
+        {
+            r.enabled = toggle;
+            r.GetComponent<MeshCollider>().enabled = toggle;
+        }
+
+        _drawVoids = toggle;
+        _toggleVoidsGo = toggle;
+    }
+
+    
     public void StartRegularGrid()
     {
         _drawWithVoxels = true;
@@ -544,8 +531,9 @@ public class CombinerEnvironment : MonoBehaviour
         _drawWithVoids = true;
         _drawWithVoxels = false;
         _genNewGrid = true;
+        //Activate the voids so they can be used by the bounding box method
+        ToggleVoidsGo(_toggleVoidsGo);
         CreateVoidGrid();
-        //_eraseGrid = true;
 
         Debug.Log("Generating Around Voids");
     }
