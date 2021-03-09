@@ -5,6 +5,7 @@ using UnityEngine;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
+// From https://github.com/daversd/RC4_M2_C3
 
 public class CombinerAgent : Agent
 {

@@ -10,7 +10,7 @@ using DenseGrid;
 using QuickGraph;
 using QuickGraph.Algorithms;
 using System;
-
+//Based on https://github.com/daversd/RC4_M2_C3 , modified to input voids manualy and with methods and classes https://github.com/ADRC4/Voxel
 public class CombinerEnvironment : MonoBehaviour
 {
     #region training buttons
@@ -57,18 +57,11 @@ public class CombinerEnvironment : MonoBehaviour
     #endregion
 
     #region VoidGrid
-    //GUI
-    Rect _windowRect = new Rect(40, 300, 250, 400);
-    GUISkin _skin = null;
-
+    //Used in the voidgrid method
     string _voxelSize = "0.96";
-    
-
     Grid3d _grid3D = null;
     Vector3Int _grid3dSize;
     GameObject _voids;
-    //int _animatedCount;
-    //List<(DenseGrid.Voxel, float)> _orderedVoxels = new List<(DenseGrid.Voxel, float)>();
 
     #endregion
 
@@ -78,7 +71,6 @@ public class CombinerEnvironment : MonoBehaviour
     {
         // 04 Get the Agent from the hierarchy
         //_agent = transform.Find("CombinerAgent").GetComponent<CombinerAgent>();
-
         _voids = GameObject.Find("Voids");
         if (TrainingWithVoidGrid == true)
         {
@@ -96,39 +88,6 @@ public class CombinerEnvironment : MonoBehaviour
             _drawWithVoxels = true;
         }
     }
-
-    #region GUI
-    /*
-    void OnGUI()
-    {
-        GUI.skin = _skin;
-        GUI.skin.label.fontSize = 20; //not working
-        //_skin = Resources.Load<GUISkin>($"GUI/GUISkin1");
-        //_skin.fontSize = 20;
-
-        _windowRect = GUI.Window(0, _windowRect, WindowFunction, string.Empty);
-    }
-
-    void WindowFunction(int windowID)
-    {
-        int i = 1;
-        int s = 50;
-
-        _voxelSize = GUI.TextField(new Rect(s / 2, s * i++, 200, 40), _voxelSize);
-
-        if (GUI.Button(new Rect(s / 2, s * i++, 200, 40), "Generate"))
-            GrowVoxels(); //GrowVoxels()
-
-        if (GUI.Button(new Rect(s / 2, s * i++, 200, 40), "Purge ALL Voxels"))
-            ErraseVoxels();
-
-        if (_toggleVoids != GUI.Toggle(new Rect(s / 2, s * i++, 200, 40), _toggleVoids, "Show UserInput voids"))
-            ToggleVoids(!_toggleVoids);
-        if (_toggleVoidsGo != GUI.Toggle(new Rect(s / 2, s * i++, 200, 40), _toggleVoidsGo, "Show GameObject voids"))
-            ToggleVoidsGo(!_toggleVoidsGo);
-    }
-    */
-    #endregion
 
     void Update()
     {
@@ -268,11 +227,11 @@ public class CombinerEnvironment : MonoBehaviour
     }
 
     /// <summary>
-    /// Trying to make more complex aggregations. Method From https://github.com/ADRC4/Voxel
+    /// Trying to make more complex aggregations. Method using clases from https://github.com/ADRC4/Voxel
     /// </summary>
     private void CreateVoidGrid()
     {
-        ToggleVoidsGo(_toggleVoidsGo);
+        //ToggleVoidsGo(_toggleVoidsGo);
         //Gen. bounding box grid
         var colliders = _voids.GetComponentsInChildren<MeshCollider>().ToArray();
         var voxelSize = float.Parse(_voxelSize);
@@ -314,7 +273,7 @@ public class CombinerEnvironment : MonoBehaviour
                         voxel.IsVoid = false;
                         //Check is possition 
                     }
-                    else //Void objects, ////If in a gameobject void, create a component but set the voxel as occupied, and as void (for the rendering)
+                    else //Void objects, //If in a gameobject void, create a component but set the voxel as occupied, and as void (for the rendering)
                     {
                         var newComponentGO = Instantiate(componentPrefab, voxel.Index + transform.position, Quaternion.identity, transform);
 
@@ -359,7 +318,6 @@ public class CombinerEnvironment : MonoBehaviour
                     }
                 }
             }
-
         }
     }
 
@@ -421,7 +379,7 @@ public class CombinerEnvironment : MonoBehaviour
 
     #region Public Methods
     /// <summary>
-    /// Erasing to the ground
+    /// Erasing to the ground, not workin properly
     /// </summary>
     public void ErraseGrid()
     {
@@ -505,6 +463,7 @@ public class CombinerEnvironment : MonoBehaviour
         _drawVoids = toggle;
         _toggleVoids = toggle;
     }
+
     public void ToggleVoidsGo(bool toggle)
     {
         foreach (var r in _voids.GetComponentsInChildren<Renderer>())
@@ -517,7 +476,6 @@ public class CombinerEnvironment : MonoBehaviour
         _toggleVoidsGo = toggle;
     }
 
-    
     public void StartRegularGrid()
     {
         _drawWithVoxels = true;
