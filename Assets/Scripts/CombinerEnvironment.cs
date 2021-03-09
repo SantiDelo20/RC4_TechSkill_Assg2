@@ -24,6 +24,8 @@ public class CombinerEnvironment : MonoBehaviour
     public VoxelGrid VoxelGrid { get; private set; }
     Vector3Int _gridSize;
 
+    
+
     #region private button bools
 
     private bool _toggleVoids = true;
@@ -62,6 +64,7 @@ public class CombinerEnvironment : MonoBehaviour
     Grid3d _grid3D = null;
     Vector3Int _grid3dSize;
     GameObject _voids;
+    //public Transform _voids;
 
     #endregion
 
@@ -72,6 +75,10 @@ public class CombinerEnvironment : MonoBehaviour
         // 04 Get the Agent from the hierarchy
         //_agent = transform.Find("CombinerAgent").GetComponent<CombinerAgent>();
         _voids = GameObject.Find("Voids");
+        //_voids = gameObject.transform.GetChild(1);
+        //_voids = GetComponentInChildren<Transform>().Where(t = t.parent.name == "Voids");
+
+
         if (TrainingWithVoidGrid == true)
         {
             CreateVoidGrid();
