@@ -62,9 +62,10 @@ public class CombinerEnvironment : MonoBehaviour
     //Used in the voidgrid method. use the same size as in the agent and in the drawing class for Transparent voxels.
     float _voxelSize = 0.96f;
     Grid3d _grid3D = null;
+
     Vector3Int _grid3dSize;
-    GameObject _voids;
-    //public Transform _voids;
+    //GameObject _voids;
+    public Transform _voids;
 
     #endregion
 
@@ -72,12 +73,13 @@ public class CombinerEnvironment : MonoBehaviour
 
     void Start()
     {
-        // 04 Get the Agent from the hierarchy
-        //_agent = transform.Find("CombinerAgent").GetComponent<CombinerAgent>();
-        _voids = GameObject.Find("Voids");
-        //_voids = gameObject.transform.GetChild(1);
-        //_voids = GetComponentInChildren<Transform>().Where(t = t.parent.name == "Voids");
 
+        //_voids = GameObject.Find("Voids");
+
+        //_voids = transform.Find("voids").gameObject;
+        
+        _voids = gameObject.transform.GetChild(1);
+        print(_voids);
 
         if (TrainingWithVoidGrid == true)
         {
@@ -97,18 +99,8 @@ public class CombinerEnvironment : MonoBehaviour
 
     void Update()
     {
-        //VOids go mesh colider
-        /*
-        if (_toggleVoidsGo == true)
-        {
-            ToggleVoidsGo(_toggleVoidsGo);
-        }
-        else
-        {
-            ToggleVoidsGo(_toggleVoidsGo);
-        }
-        */
-        if(_drawWithVoxels == true)
+
+        if (_drawWithVoxels == true)
         {
             while (_genNewGrid == true)
             {
