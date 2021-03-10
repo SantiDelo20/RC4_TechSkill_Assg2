@@ -23,7 +23,7 @@ behaviors:
         strength: 1.0
       curiosity:
         gamma: 0.99
-        strength: 0.02
+        strength: 0.1
         encoding_size: 256
         learning_rate: 0.0003
     init_path: null
@@ -56,7 +56,7 @@ environment_parameters:
     - value:
         sampler_type: constant
         sampler_parameters:
-          seed: 9700
+          seed: 8283
           value: 0.4
       name: FirstLesson
       completion_criteria:
@@ -69,7 +69,7 @@ environment_parameters:
     - value:
         sampler_type: constant
         sampler_parameters:
-          seed: 9701
+          seed: 8284
           value: 0.3
       name: SecondLesson
       completion_criteria:
@@ -82,7 +82,7 @@ environment_parameters:
     - value:
         sampler_type: constant
         sampler_parameters:
-          seed: 9702
+          seed: 8285
           value: 0.25
       name: ThirdLesson
       completion_criteria:
@@ -95,7 +95,7 @@ environment_parameters:
     - value:
         sampler_type: constant
         sampler_parameters:
-          seed: 9703
+          seed: 8286
           value: 0.2
       name: FourthLesson
       completion_criteria:
@@ -108,7 +108,7 @@ environment_parameters:
     - value:
         sampler_type: constant
         sampler_parameters:
-          seed: 9704
+          seed: 8287
           value: 0.15
       name: FifthLesson
       completion_criteria:
@@ -121,7 +121,7 @@ environment_parameters:
     - value:
         sampler_type: constant
         sampler_parameters:
-          seed: 9705
+          seed: 8288
           value: 0.1
       name: SixthLesson
       completion_criteria:
@@ -134,7 +134,7 @@ environment_parameters:
     - value:
         sampler_type: constant
         sampler_parameters:
-          seed: 9706
+          seed: 8289
           value: 0.05
       name: LastLesson
       completion_criteria: null

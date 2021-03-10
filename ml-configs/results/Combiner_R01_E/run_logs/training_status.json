@@ -1,45 +1,45 @@
 {
     "void_ratio": {
-        "lesson_num": 0
+        "lesson_num": 1
     },
     "Combiner": {
         "checkpoints": [
             {
-                "steps": 999998,
-                "file_path": "results\\Combiner_R01_E\\Combiner\\Combiner-999998.nn",
-                "reward": 0.4905999760958366,
-                "creation_time": 1615321721.611111
-            },
-            {
-                "steps": 1099998,
-                "file_path": "results\\Combiner_R01_E\\Combiner\\Combiner-1099998.nn",
-                "reward": 0.4627999781514518,
-                "creation_time": 1615322162.192425
-            },
-            {
-                "steps": 1199998,
-                "file_path": "results\\Combiner_R01_E\\Combiner\\Combiner-1199998.nn",
-                "reward": 0.4497999811428599,
-                "creation_time": 1615322586.8635883
-            },
-            {
-                "steps": 1299998,
-                "file_path": "results\\Combiner_R01_E\\Combiner\\Combiner-1299998.nn",
-                "reward": 0.461399980893475,
-                "creation_time": 1615323022.8295732
-            },
-            {
-                "steps": 1305630,
-                "file_path": "results\\Combiner_R01_E\\Combiner\\Combiner-1305630.nn",
+                "steps": 999982,
+                "file_path": "results\\Combiner_R01_E\\Combiner\\Combiner-999982.nn",
                 "reward": null,
-                "creation_time": 1615323051.0528076
+                "creation_time": 1615335572.132656
+            },
+            {
+                "steps": 1099982,
+                "file_path": "results\\Combiner_R01_E\\Combiner\\Combiner-1099982.nn",
+                "reward": null,
+                "creation_time": 1615335972.1196966
+            },
+            {
+                "steps": 1199982,
+                "file_path": "results\\Combiner_R01_E\\Combiner\\Combiner-1199982.nn",
+                "reward": 2.2478000791743398,
+                "creation_time": 1615336362.9408088
+            },
+            {
+                "steps": 1299982,
+                "file_path": "results\\Combiner_R01_E\\Combiner\\Combiner-1299982.nn",
+                "reward": null,
+                "creation_time": 1615336763.933866
+            },
+            {
+                "steps": 1372494,
+                "file_path": "results\\Combiner_R01_E\\Combiner\\Combiner-1372494.nn",
+                "reward": 2.491100088926032,
+                "creation_time": 1615337055.9243124
             }
         ],
         "final_checkpoint": {
-            "steps": 1305630,
+            "steps": 1372494,
             "file_path": "results\\Combiner_R01_E\\Combiner.nn",
-            "reward": null,
-            "creation_time": 1615323051.0528076
+            "reward": 2.491100088926032,
+            "creation_time": 1615337055.9243124
         }
     },
     "metadata": {

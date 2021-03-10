@@ -70,6 +70,13 @@ public class CombinerAgent : Agent
             int y = Random.Range(0, _voxelGrid.GridSize.y);
             int z = Random.Range(0, _voxelGrid.GridSize.z);
 
+            while(_voxelGrid.Voxels[x, y, z].IsVoid)
+            {
+                Debug.Log("invalid start, trying a new start coordinate)");
+                x = Random.Range(0, _voxelGrid.GridSize.x);
+                y = Random.Range(0, _voxelGrid.GridSize.y);
+                z = Random.Range(0, _voxelGrid.GridSize.z);
+            }
             // 38 Move the agent to new random voxel
             GoToVoxel(new Vector3Int(x, y, z));
         }
@@ -96,7 +103,7 @@ public class CombinerAgent : Agent
             if (MoveAgent(movementAction))
             {
                 // 50 If action was valid, add reward
-                AddReward(0.0001f);
+                AddReward(0.0002f);
             }
             else
             {
@@ -108,12 +115,12 @@ public class CombinerAgent : Agent
             if (_component.ChangeState(modifyAction))
             {
                 // 53 If action was valid, add reward
-                AddReward(0.0001f);
+                AddReward(0.0002f);
             }
             else
             {
                 // 54 Otherwise, apply penalty
-                AddReward(-0.0001f);
+                AddReward(-0.0002f);
             }
 
             // 57 Check if the current void ratio obeys the target void ratio
@@ -122,7 +129,7 @@ public class CombinerAgent : Agent
                 // 58 Print result
                 print($"Succeeded with {_voidRatioThreshold}");
                 // 59 Reward agent
-                AddReward(1f);
+                AddReward(1.3f);
                 // 60 End episode
                 EndEpisode();
             }
@@ -217,9 +224,11 @@ public class CombinerAgent : Agent
 
         // 47 Check if the resulting action keeps the agent within the grid
         Vector3Int destination = _voxelLocation.Index + direction;
+
         if (destination.x < 0 || destination.x >= _voxelGrid.GridSize.x ||
             destination.y < 0 || destination.y >= _voxelGrid.GridSize.y ||
-            destination.z < 0 || destination.z >= _voxelGrid.GridSize.z)
+            destination.z < 0 || destination.z >= _voxelGrid.GridSize.z || 
+            _voxelGrid.Voxels[destination.x, destination.y, destination.z].IsVoid)    
         {
             // 48 Return false if action was invalid
             return false;

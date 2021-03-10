@@ -1,0 +1,6 @@
+model_checkpoint_path: "Combiner-3000206.ckpt"
+all_model_checkpoint_paths: "Combiner-2699950.ckpt"
+all_model_checkpoint_paths: "Combiner-2799950.ckpt"
+all_model_checkpoint_paths: "Combiner-2899950.ckpt"
+all_model_checkpoint_paths: "Combiner-2999950.ckpt"
+all_model_checkpoint_paths: "Combiner-3000206.ckpt"

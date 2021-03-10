@@ -23,13 +23,13 @@ behaviors:
         strength: 1.0
       curiosity:
         gamma: 0.99
-        strength: 0.02
+        strength: 0.1
         encoding_size: 256
         learning_rate: 0.0003
     init_path: null
     keep_checkpoints: 5
     checkpoint_interval: 100000
-    max_steps: 2000000
+    max_steps: 3000000
     time_horizon: 64
     summary_freq: 10000
     threaded: true
@@ -56,8 +56,8 @@ environment_parameters:
     - value:
         sampler_type: constant
         sampler_parameters:
-          seed: 1688
-          value: 0.4
+          seed: 5993
+          value: 0.55
       name: FirstLesson
       completion_criteria:
         behavior: Combiner
@@ -69,8 +69,8 @@ environment_parameters:
     - value:
         sampler_type: constant
         sampler_parameters:
-          seed: 1689
-          value: 0.3
+          seed: 5994
+          value: 0.4
       name: SecondLesson
       completion_criteria:
         behavior: Combiner
@@ -82,8 +82,8 @@ environment_parameters:
     - value:
         sampler_type: constant
         sampler_parameters:
-          seed: 1690
-          value: 0.25
+          seed: 5995
+          value: 0.3
       name: ThirdLesson
       completion_criteria:
         behavior: Combiner
@@ -95,7 +95,7 @@ environment_parameters:
     - value:
         sampler_type: constant
         sampler_parameters:
-          seed: 1691
+          seed: 5996
           value: 0.2
       name: FourthLesson
       completion_criteria:
@@ -108,7 +108,7 @@ environment_parameters:
     - value:
         sampler_type: constant
         sampler_parameters:
-          seed: 1692
+          seed: 5997
           value: 0.15
       name: FifthLesson
       completion_criteria:
@@ -121,7 +121,7 @@ environment_parameters:
     - value:
         sampler_type: constant
         sampler_parameters:
-          seed: 1693
+          seed: 5998
           value: 0.1
       name: SixthLesson
       completion_criteria:
@@ -134,7 +134,7 @@ environment_parameters:
     - value:
         sampler_type: constant
         sampler_parameters:
-          seed: 1694
+          seed: 5999
           value: 0.05
       name: LastLesson
       completion_criteria: null

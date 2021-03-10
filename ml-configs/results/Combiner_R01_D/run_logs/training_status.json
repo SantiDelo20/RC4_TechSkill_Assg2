@@ -5,17 +5,29 @@
     "Combiner": {
         "checkpoints": [
             {
-                "steps": 41052,
-                "file_path": "results\\Combiner_R01_D\\Combiner\\Combiner-41052.nn",
+                "steps": 99981,
+                "file_path": "results\\Combiner_R01_D\\Combiner\\Combiner-99981.nn",
+                "reward": 0.08439999537949916,
+                "creation_time": 1615330378.9042656
+            },
+            {
+                "steps": 199981,
+                "file_path": "results\\Combiner_R01_D\\Combiner\\Combiner-199981.nn",
                 "reward": null,
-                "creation_time": 1615317323.6125083
+                "creation_time": 1615330770.373375
+            },
+            {
+                "steps": 236397,
+                "file_path": "results\\Combiner_R01_D\\Combiner\\Combiner-236397.nn",
+                "reward": null,
+                "creation_time": 1615330916.049816
             }
         ],
         "final_checkpoint": {
-            "steps": 41052,
+            "steps": 236397,
             "file_path": "results\\Combiner_R01_D\\Combiner.nn",
             "reward": null,
-            "creation_time": 1615317323.6125083
+            "creation_time": 1615330916.049816
         }
     },
     "metadata": {
