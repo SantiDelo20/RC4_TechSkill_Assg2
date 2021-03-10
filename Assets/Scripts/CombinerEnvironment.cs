@@ -216,6 +216,7 @@ public class CombinerEnvironment : MonoBehaviour
     /// </summary>
     private void EraseRaycast()
     {
+        
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
         if (Physics.Raycast(ray, out RaycastHit hit))
@@ -242,6 +243,7 @@ public class CombinerEnvironment : MonoBehaviour
     /// </summary>
     private void SelectComponent()
     {
+      
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
         if (Physics.Raycast(ray, out RaycastHit hit))

@@ -103,7 +103,7 @@ public class CombinerAgent : Agent
             if (MoveAgent(movementAction))
             {
                 // 50 If action was valid, add reward
-                AddReward(0.0002f);
+                //AddReward(0.0001f);
             }
             else
             {
@@ -171,12 +171,21 @@ public class CombinerAgent : Agent
         {
             if (neighbours[i] != null)
             {
+                
+                if (neighbours[i].IsVoid)
+                {
+                    sensor.AddObservation(3);
+                }
                 // 65 If neighbour voxel is occupied
-                if (neighbours[i].IsOccupied) sensor.AddObservation(1);
+                //remove the else
+                else if (neighbours[i].IsOccupied) sensor.AddObservation(1);
+
                 // 66 If neighbour voxel is not occupied
+                //if neighbour is void
                 else sensor.AddObservation(2);
             }
             // 67 If neighbour voxel does not exist
+            
             else sensor.AddObservation(0);
         }
 
